@@ -1,0 +1,16 @@
+channels:
+  - conda-forge
+dependencies:
+  - morfeus-ml
+  - networkx
+  - numpy
+  - pandas
+  - pip
+  - python=3.10
+  - rdkit 
+  - scipy
+  - shapely
+  - pip:
+      - git+https://github.com/digital-chemistry-laboratory/coulson
+      - csvkit
+      - pyscf

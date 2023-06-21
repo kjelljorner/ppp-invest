@@ -1,4 +1,34 @@
-# Main entrypoint of the workflow. 
-# Please follow the best practices: 
-# https://snakemake.readthedocs.io/en/stable/snakefiles/best_practices.html,
-# in particular regarding the standardized folder structure mentioned there. 
+(SAMPLES,) = glob_wildcards("resources/azaphenalenes_xyz/{sample}.xyz")
+
+
+rule all:
+    input:
+        expand("results/{sample}.csv", sample=SAMPLES),
+    output:
+        "results/combined.csv",
+    conda:
+        "envs/coulson.yml"
+    shell:
+        "csvstack {input} > {output}"
+
+
+rule one:
+    input:
+        "results/2.csv",
+    output:
+        "results/combined.csv",
+    conda:
+        "envs/coulson.yml"
+    shell:
+        "csvstack {input} > {output}"
+
+
+rule calculate_compound:
+    input:
+        "resources/azaphenalenes_xyz/{sample}.xyz",
+    output:
+        "results/{sample}.csv",
+    conda:
+        "envs/coulson.yml"
+    script:
+        "scripts/calculate.py"
