@@ -13,4 +13,3 @@ dependencies:
   - pip:
       - git+https://github.com/digital-chemistry-laboratory/coulson
       - csvkit
-      - pyscf

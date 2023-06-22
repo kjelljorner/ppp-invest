@@ -1,4 +1,4 @@
-(SAMPLES,) = glob_wildcards("resources/azaphenalenes_xyz/{sample}.xyz")
+(SAMPLES,) = glob_wildcards("data/azaphenalenes_xyz/{sample}.xyz")
 
 
 rule all:
@@ -12,20 +12,9 @@ rule all:
         "csvstack {input} > {output}"
 
 
-rule one:
-    input:
-        "results/2.csv",
-    output:
-        "results/combined.csv",
-    conda:
-        "envs/coulson.yml"
-    shell:
-        "csvstack {input} > {output}"
-
-
 rule calculate_compound:
     input:
-        "resources/azaphenalenes_xyz/{sample}.xyz",
+        "data/azaphenalenes_xyz/{sample}.xyz",
     output:
         "results/{sample}.csv",
     conda:
