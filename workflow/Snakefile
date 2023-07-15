@@ -16,7 +16,6 @@ def get_samples(name):
 
 NAMES = ["azaphenalenes", "azulenes", "rational_design"]
 SAMPLES = {name: get_samples(name) for name in NAMES}
-print(SAMPLES)
 
 
 rule small:
@@ -26,7 +25,11 @@ rule small:
 
 rule combine_csvs:
     input:
-        lambda wildcards: expand("results/{name}/{sample}.csv", sample=SAMPLES[wildcards.name], name=wildcards.name)
+        lambda wildcards: expand(
+            "results/{name}/{sample}.csv",
+            sample=SAMPLES[wildcards.name],
+            name=wildcards.name,
+        ),
     output:
         csv="results/{name}_combined.csv",
         tar="results/{name}.tar.gz",
