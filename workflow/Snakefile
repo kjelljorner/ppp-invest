@@ -48,7 +48,7 @@ rule extract_xyz:
     output:
         temp("data/xyz/{name}/{sample}.xyz"),
     shell:
-        "tar -xf {input} -C data/xyz/{wildcards.name}/ {wildcards.sample}.xyz"
+        "tar -xf --warning=no-unknown-keyword {input} -C data/xyz/{wildcards.name}/ {wildcards.sample}.xyz"
 
 
 rule calculate_compound:
