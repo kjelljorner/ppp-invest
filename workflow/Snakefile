@@ -1,20 +1,22 @@
 import pandas as pd
+import itertools
 from pathlib import Path
 import tarfile
 
 
-NAMES = ["azaphenalenes", "azulenes", "rational_design"]
-
-
-def get_samples(wildcards):
-    with tarfile.open(Path(f"data/xyz/{wildcards.name}/xyz.tar.gz")) as f:
+def get_samples(name):
+    with tarfile.open(Path(f"data/xyz/{name}/xyz.tar.gz")) as f:
         filenames = f.getnames()
-    samples = [Path(sample) for sample in filenames]
-    samples = [
-        Path(f"results/{wildcards.name}") / p.with_suffix(".csv").name for p in samples
-    ]
+    # samples = [Path(sample) for sample in filenames]
+    # samples = [Path(f"results/{name}") / p.with_suffix(".csv").name for p in samples]
+    samples = [filename.split(".")[0] for filename in filenames]
 
     return samples
+
+
+NAMES = ["azaphenalenes", "azulenes", "rational_design"]
+SAMPLES = {name: get_samples(name) for name in NAMES}
+print(SAMPLES)
 
 
 rule small:
@@ -24,36 +26,28 @@ rule small:
 
 rule combine_csvs:
     input:
-        get_samples,
+        lambda wildcards: expand("results/{name}/{sample}.csv", sample=SAMPLES[wildcards.name], name=wildcards.name)
     output:
-        "results/{name}_combined.csv",
+        csv="results/{name}_combined.csv",
+        tar="results/{name}.tar.gz",
     conda:
         "envs/coulson.yml"
     shell:
-        "csvstack {input} > {output}"
-
-
-rule compress_csvs:
-    input:
-        get_samples,
-    output:
-        "results/{name}.tar.gz",
-    shell:
-        "tar -cf {output} {input}"
+        "csvstack {input} > {output.csv} && tar -cf {output.tar} {input}"
 
 
 rule extract_xyz:
     input:
         "data/xyz/{name}/xyz.tar.gz",
     output:
-        temp("data/xyz/{name}/{sample}.xyz"),
+        temp("resources/xyz/{name}/{sample}.xyz"),
     shell:
-        "tar -xf --warning=no-unknown-keyword {input} -C data/xyz/{wildcards.name}/ {wildcards.sample}.xyz"
+        "tar -xf {input} -C resources/xyz/{wildcards.name}/ {wildcards.sample}.xyz"
 
 
 rule calculate_compound:
     input:
-        "data/xyz/{name}/{sample}.xyz",
+        "resources/xyz/{name}/{sample}.xyz",
     output:
         temp("results/{name}/{sample}.csv"),
     conda:
