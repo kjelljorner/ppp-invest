@@ -18,7 +18,7 @@ NAMES = ["azaphenalenes", "azulenes", "rational_design"]
 SAMPLES = {name: get_samples(name) for name in NAMES}
 
 
-rule small:
+rule all:
     input:
         expand(["results/{name}_combined.csv", "results/{name}.tar.gz"], name=NAMES),
 
