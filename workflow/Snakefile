@@ -38,7 +38,7 @@ checkpoint extract_xyz:
     input:
         "data/xyz/{name}/xyz.tar.gz",
     output:
-        "resources/xyz/{name}",
+        directory("resources/xyz/{name}"),
     shell:
         "mkdir -p {output} && tar -xf {input} -C {output}"
 
