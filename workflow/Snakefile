@@ -1,22 +1,61 @@
-(SAMPLES,) = glob_wildcards("data/azaphenalenes_xyz/{sample}.xyz")
+import pandas as pd
+from pathlib import Path
+import tarfile
 
 
-rule all:
+NAMES = ["azaphenalenes", "azulenes", "rational_design"]
+
+
+def get_samples(wildcards):
+    with tarfile.open(Path(f"data/xyz/{wildcards.name}/xyz.tar.gz")) as f:
+        filenames = f.getnames()
+    samples = [Path(sample) for sample in filenames]
+    samples = [
+        Path(f"results/{wildcards.name}") / p.with_suffix(".csv").name for p in samples
+    ]
+
+    return samples
+
+
+rule small:
     input:
-        expand("results/{sample}.csv", sample=SAMPLES),
+        expand(["results/{name}_combined.csv", "results/{name}.tar.gz"], name=NAMES),
+
+
+rule combine_csvs:
+    input:
+        get_samples,
     output:
-        "results/combined.csv",
+        "results/{name}_combined.csv",
     conda:
         "envs/coulson.yml"
     shell:
         "csvstack {input} > {output}"
 
 
+rule compress_csvs:
+    input:
+        get_samples,
+    output:
+        "results/{name}.tar.gz",
+    shell:
+        "tar -cf {output} {input}"
+
+
+rule extract_xyz:
+    input:
+        "data/xyz/{name}/xyz.tar.gz",
+    output:
+        temp("data/xyz/{name}/{sample}.xyz"),
+    shell:
+        "tar -xf {input} -C data/xyz/{wildcards.name}/ {wildcards.sample}.xyz"
+
+
 rule calculate_compound:
     input:
-        "data/azaphenalenes_xyz/{sample}.xyz",
+        "data/xyz/{name}/{sample}.xyz",
     output:
-        "results/{sample}.csv",
+        temp("results/{name}/{sample}.csv"),
     conda:
         "envs/coulson.yml"
     script:
