@@ -1,21 +1,20 @@
 import pandas as pd
 import itertools
 from pathlib import Path
+import os
 import tarfile
 
 
-def get_samples(name):
-    with tarfile.open(Path(f"data/xyz/{name}/xyz.tar.gz")) as f:
-        filenames = f.getnames()
-    # samples = [Path(sample) for sample in filenames]
-    # samples = [Path(f"results/{name}") / p.with_suffix(".csv").name for p in samples]
-    samples = [filename.split(".")[0] for filename in filenames]
-
-    return samples
+def aggregate_input(wildcards):
+    checkpoint_output = checkpoints.extract_xyz.get(**wildcards).output[0]
+    return expand(
+        "results/{name}/{sample}.csv",
+        name=wildcards.name,
+        sample=glob_wildcards(os.path.join(checkpoint_output, "{i}.xyz")).i,
+    )
 
 
 NAMES = ["azaphenalenes", "azulenes", "rational_design"]
-SAMPLES = {name: get_samples(name) for name in NAMES}
 
 
 rule all:
@@ -25,11 +24,7 @@ rule all:
 
 rule combine_csvs:
     input:
-        lambda wildcards: expand(
-            "results/{name}/{sample}.csv",
-            sample=SAMPLES[wildcards.name],
-            name=wildcards.name,
-        ),
+        aggregate_input,
     output:
         csv="results/{name}_combined.csv",
         tar="results/{name}.tar.gz",
@@ -39,20 +34,20 @@ rule combine_csvs:
         "csvstack {input} > {output.csv} && tar -cf {output.tar} {input}"
 
 
-rule extract_xyz:
+checkpoint extract_xyz:
     input:
         "data/xyz/{name}/xyz.tar.gz",
     output:
-        temp("resources/xyz/{name}/{sample}.xyz"),
+        "resources/xyz/{name}",
     shell:
-        "tar -xf {input} -C resources/xyz/{wildcards.name}/ {wildcards.sample}.xyz"
+        "mkdir -p {output} && tar -xf {input} -C {output}"
 
 
 rule calculate_compound:
     input:
         "resources/xyz/{name}/{sample}.xyz",
     output:
-        temp("results/{name}/{sample}.csv"),
+        "results/{name}/{sample}.csv",
     conda:
         "envs/coulson.yml"
     script:
