@@ -7,9 +7,13 @@ dependencies:
   - pandas
   - pip
   - python=3.10
+  - pyyaml
   - rdkit 
+  - roman
+  - seaborn
+  - scikit-learn
   - scipy
   - shapely
+  - skunk
   - pip:
       - git+https://github.com/digital-chemistry-laboratory/coulson
-      - csvkit

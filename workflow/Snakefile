@@ -4,51 +4,190 @@ from pathlib import Path
 import os
 import tarfile
 
-
-def aggregate_input(wildcards):
-    checkpoint_output = checkpoints.extract_xyz.get(**wildcards).output[0]
-    return expand(
-        "results/{name}/{sample}.csv",
-        name=wildcards.name,
-        sample=glob_wildcards(os.path.join(checkpoint_output, "{i}.xyz")).i,
-    )
+NAMES = ["azaphenalenes", "azulenes", "garner", "rational_design"]
 
 
-NAMES = ["azaphenalenes", "azulenes", "rational_design"]
-
-
-rule all:
+rule manuscript:
     input:
-        expand(["results/{name}_combined.csv", "results/{name}.tar.gz"], name=NAMES),
-
-
-rule combine_csvs:
-    input:
-        aggregate_input,
+        qmd="manuscript/manuscript.qmd",
+        variables="manuscript/_variables.yml",
+        params="manuscript/_params.yml",
+        figures_qualitative=[
+            "results/figures/azaphenalene_orbitals.png",
+            "results/figures/azaphenalene_excitations.png",
+            "results/figures/pentalene_orbitals.png",
+            "results/figures/pentalene_excitations.png",
+            "results/figures/pentalene_ideal_orbitals.png",
+            "results/figures/pentalene_ideal_excitations.png",
+        ],
+        figures_local=[
+            "results/figures/local_azaphenalenes.pdf",
+            "results/figures/local_azulenes.pdf",
+            "results/figures/local_corr.pdf",
+        ],
+        figures_global=[
+            "results/figures/global_all.pdf",
+            "results/figures/global_all_gaps.pdf",
+            "results/figures/global_scaffolds_gaps.png",
+            "results/figures/global_scaffolds_oscillator.png",
+            "results/figures/global_scaffolds_singlet.png",
+            "results/figures/global_scaffolds_triplet.png",
+        ],
+        figures_garner=[
+            "results/figures/garner_gaps.pdf",
+        ],
+        tables_local=[
+            "results/tables/local_azaphenalenes.md",
+            "results/tables/local_azulenes.md",
+        ],
+        tables_global=[
+            "results/tables/global_all_gaps.md",
+            "results/tables/global_scaffolds.md",
+        ],
+        tables_garner=[
+            "results/tables/garner_gaps.md",
+        ],
     output:
-        csv="results/{name}_combined.csv",
-        tar="results/{name}.tar.gz",
-    conda:
-        "envs/coulson.yml"
+        "manuscript/manuscript.pdf",
     shell:
-        "csvstack {input} > {output.csv} && tar -cf {output.tar} {input}"
+        "quarto render {input.qmd} --execute-params {input.params}"
 
 
-checkpoint extract_xyz:
+rule concatenate_variables:
+    input:
+        "data/variables/variables.yml",
+        "results/variables/qualitative.yml",
+        "results/variables/local.yml",
+        "results/variables/global.yml",
+        "results/variables/garner.yml",
+    output:
+        "manuscript/_variables.yml",
+    shell:
+        "cat {input} > {output}"
+
+
+rule concatenate_params:
+    input:
+        "results/params/local.yml",
+        "results/params/global.yml",
+        "results/params/garner.yml",
+    output:
+        "manuscript/_params.yml",
+    shell:
+        "cat {input} > {output}"
+
+
+rule garner:
+    input:
+        data_non_alternants="results/garner_non_alternants.csv",
+        reference_non_alternants="data/reference/garner_non_alternants.csv",
+        data_avoided_symmetry="results/garner_avoided_symmetry.csv",
+        reference_avoided_symmetry="data/reference/garner_avoided_symmetry.csv",
+        data_substituted="results/garner_substituted.csv",
+        reference_substituted="data/reference/garner_substituted.csv",
+        reference_rational="data/reference/rational_design.csv",
+        xyz_non_alternants="resources/xyz/garner_non_alternants",
+        xyz_avoided_symmetry="resources/xyz/garner_avoided_symmetry",
+        xyz_substituted="resources/xyz/garner_substituted",
+        corr="results/linear_correction.json",
+    output:
+        params="results/params/garner.yml",
+        variables="results/variables/garner.yml",
+        figure_gaps="results/figures/garner_gaps.pdf",
+        table_gaps="results/tables/garner_gaps.md",
+    log:
+        notebook="logs/notebooks/garner.ipynb",
+    notebook:
+        "notebooks/garner.ipynb"
+
+
+rule global:
+    input:
+        data="results/rational_design.csv",
+        reference="data/reference/rational_design.csv",
+    output:
+        params="results/params/global.yml",
+        variables="results/variables/global.yml",
+        corr="results/linear_correction.json",
+        figure_global_all_gaps="results/figures/global_all_gaps.pdf",
+        table_global_all_gaps="results/tables/global_all_gaps.md",
+        figure_global_all="results/figures/global_all.pdf",
+        figure_global_scaffolds_gap="results/figures/global_scaffolds_gaps.png",
+        table_global_scaffolds="results/tables/global_scaffolds.md",
+        table_global_scaffolds_oscillator="results/figures/global_scaffolds_oscillator.png",
+        figure_global_scaffolds_singlet="results/figures/global_scaffolds_singlet.png",
+        figure_global_scaffolds_triplet="results/figures/global_scaffolds_triplet.png",
+    log:
+        notebook="logs/notebooks/global.ipynb",
+    notebook:
+        "notebooks/global.ipynb"
+
+
+rule local:
+    input:
+        azaphenalenes="results/azaphenalenes.csv",
+        azaphenalenes_ref="data/reference/azaphenalenes.csv",
+        azulenes="results/azulenes.csv",
+        azulenes_ref="data/reference/azulenes.csv",
+        utils=workflow.source_path("notebooks/utils.py"),
+        corr="results/linear_correction.json",
+    output:
+        figure_azaphenalenes="results/figures/local_azaphenalenes.pdf",
+        figure_azulenes="results/figures/local_azulenes.pdf",
+        figure_corr="results/figures/local_corr.pdf",
+        table_azaphenalenes="results/tables/local_azaphenalenes.md",
+        table_azulenes="results/tables/local_azulenes.md",
+        params="results/params/local.yml",
+        variables="results/variables/local.yml",
+    log:
+        notebook="logs/notebooks/local.ipynb",
+    notebook:
+        "notebooks/local.ipynb"
+
+
+rule qualitative:
+    input:
+        azaphenalene="resources/xyz/azaphenalenes/1.xyz",
+        azaphenalene_ref="data/reference/azaphenalenes.csv",
+        pentalene="resources/xyz/rational_design/IV_1.xyz",
+        pentalene_ref="data/reference/rational_design.csv",
+        utils=workflow.source_path("notebooks/utils.py"),
+    output:
+        azaphenalene_orbitals="results/figures/azaphenalene_orbitals.png",
+        azaphenalene_excitations="results/figures/azaphenalene_excitations.png",
+        pentalene_orbitals="results/figures/pentalene_orbitals.png",
+        pentalene_excitations="results/figures/pentalene_excitations.png",
+        pentalene_ideal_orbitals="results/figures/pentalene_ideal_orbitals.png",
+        pentalene_ideal_excitations="results/figures/pentalene_ideal_excitations.png",
+        variables="results/variables/qualitative.yml",
+    log:
+        notebook="logs/notebooks/qualitative.ipynb",
+    notebook:
+        "notebooks/qualitative.ipynb"
+
+
+rule calculate_all:
+    input:
+        expand(["results/{name}.csv"], name=NAMES),
+
+
+rule calculate_compounds:
+    input:
+        path="resources/xyz/{name}",
+    output:
+        combined="results/{name}.csv",
+    log:
+        progress="logs/{name}.log",
+        notebook="logs/notebooks/calculate_compounds_{name}.ipynb",
+    threads: workflow.cores
+    notebook:
+        "notebooks/calculate_compounds.ipynb"
+
+
+rule extract_xyz:
     input:
         "data/xyz/{name}/xyz.tar.gz",
     output:
         directory("resources/xyz/{name}"),
     shell:
         "mkdir -p {output} && tar -xf {input} -C {output}"
-
-
-rule calculate_compound:
-    input:
-        "resources/xyz/{name}/{sample}.xyz",
-    output:
-        "results/{name}/{sample}.csv",
-    conda:
-        "envs/coulson.yml"
-    script:
-        "scripts/calculate.py"
