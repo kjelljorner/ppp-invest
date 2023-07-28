@@ -1,6 +1,8 @@
 channels:
   - conda-forge
 dependencies:
+  - cairosvg
+  - joblib
   - morfeus-ml
   - networkx
   - numpy
@@ -15,5 +17,6 @@ dependencies:
   - scipy
   - shapely
   - skunk
+  - tqdm
   - pip:
       - git+https://github.com/digital-chemistry-laboratory/coulson

@@ -60,6 +60,7 @@ rule concatenate_variables:
         "results/variables/local.yml",
         "results/variables/global.yml",
         "results/variables/garner.yml",
+        "results/variables/time.yml",
     output:
         "manuscript/_variables.yml",
     shell:
@@ -121,6 +122,17 @@ rule global:
         notebook="logs/notebooks/global.ipynb",
     notebook:
         "notebooks/global.ipynb"
+
+
+rule time:
+    input:
+        data="results/rational_design.csv",
+    output:
+        variables="results/variables/time.yml",
+    log:
+        notebook="logs/notebooks/time.ipynb",
+    notebook:
+        "notebooks/time.ipynb"
 
 
 rule local:
