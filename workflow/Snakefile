@@ -1,9 +1,3 @@
-import pandas as pd
-import itertools
-from pathlib import Path
-import os
-import tarfile
-
 NAMES = ["azaphenalenes", "azulenes", "garner", "rational_design"]
 
 
@@ -99,7 +93,7 @@ rule garner:
     log:
         notebook="logs/notebooks/garner.ipynb",
     conda:
-        "envs/coulson.yaml"        
+        "envs/coulson.yaml"
     notebook:
         "notebooks/garner.ipynb"
 
@@ -123,7 +117,7 @@ rule global:
     log:
         notebook="logs/notebooks/global.ipynb",
     conda:
-        "envs/coulson.yaml"        
+        "envs/coulson.yaml"
     notebook:
         "notebooks/global.ipynb"
 
@@ -136,7 +130,7 @@ rule time:
     log:
         notebook="logs/notebooks/time.ipynb",
     conda:
-        "envs/coulson.yaml"        
+        "envs/coulson.yaml"
     notebook:
         "notebooks/time.ipynb"
 
@@ -160,16 +154,16 @@ rule local:
     log:
         notebook="logs/notebooks/local.ipynb",
     conda:
-        "envs/coulson.yaml"        
+        "envs/coulson.yaml"
     notebook:
         "notebooks/local.ipynb"
 
 
 rule qualitative:
     input:
-        azaphenalene="resources/xyz/azaphenalenes/1.xyz",
+        path_azaphenalene="resources/xyz/azaphenalenes",
         azaphenalene_ref="data/reference/azaphenalenes.csv",
-        pentalene="resources/xyz/rational_design/IV_1.xyz",
+        path_pentalene="resources/xyz/rational_design",
         pentalene_ref="data/reference/rational_design.csv",
         utils=workflow.source_path("notebooks/utils.py"),
     output:
@@ -183,7 +177,7 @@ rule qualitative:
     log:
         notebook="logs/notebooks/qualitative.ipynb",
     conda:
-        "envs/coulson.yaml"        
+        "envs/coulson.yaml"
     notebook:
         "notebooks/qualitative.ipynb"
 
@@ -198,7 +192,7 @@ rule calculate_compounds:
         notebook="logs/notebooks/calculate_compounds_{name}.ipynb",
     threads: workflow.cores
     conda:
-        "envs/coulson.yaml"        
+        "envs/coulson.yaml"
     notebook:
         "notebooks/calculate_compounds.ipynb"
 
@@ -207,6 +201,6 @@ rule extract_xyz:
     input:
         "data/xyz/{name}/xyz.tar.gz",
     output:
-        directory("resources/xyz/{name}"),
+        directory("resources/xyz/{name}/"),
     shell:
         "mkdir -p {output} && tar -xf {input} -C {output}"
