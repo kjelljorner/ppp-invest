@@ -3,6 +3,8 @@ channels:
 dependencies:
   - cairosvg
   - joblib
+  - jupyter
+  - jupyterlab_code_formatter  
   - morfeus-ml
   - networkx
   - numpy
