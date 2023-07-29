@@ -18,7 +18,7 @@ dependencies:
   - scikit-learn
   - scipy
   - shapely
-  - skunk
   - tqdm
   - pip:
       - git+https://github.com/digital-chemistry-laboratory/coulson
+      - skunk
