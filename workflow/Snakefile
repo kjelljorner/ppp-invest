@@ -93,7 +93,7 @@ rule garner:
     log:
         notebook="logs/notebooks/garner.ipynb",
     conda:
-        "envs/coulson.yaml"
+        "envs/coulson.yml"
     notebook:
         "notebooks/garner.ipynb"
 
@@ -117,7 +117,7 @@ rule global:
     log:
         notebook="logs/notebooks/global.ipynb",
     conda:
-        "envs/coulson.yaml"
+        "envs/coulson.yml"
     notebook:
         "notebooks/global.ipynb"
 
@@ -130,7 +130,7 @@ rule time:
     log:
         notebook="logs/notebooks/time.ipynb",
     conda:
-        "envs/coulson.yaml"
+        "envs/coulson.yml"
     notebook:
         "notebooks/time.ipynb"
 
@@ -154,7 +154,7 @@ rule local:
     log:
         notebook="logs/notebooks/local.ipynb",
     conda:
-        "envs/coulson.yaml"
+        "envs/coulson.yml"
     notebook:
         "notebooks/local.ipynb"
 
@@ -177,7 +177,7 @@ rule qualitative:
     log:
         notebook="logs/notebooks/qualitative.ipynb",
     conda:
-        "envs/coulson.yaml"
+        "envs/coulson.yml"
     notebook:
         "notebooks/qualitative.ipynb"
 
@@ -192,7 +192,7 @@ rule calculate_compounds:
         notebook="logs/notebooks/calculate_compounds_{name}.ipynb",
     threads: workflow.cores
     conda:
-        "envs/coulson.yaml"
+        "envs/coulson.yml"
     notebook:
         "notebooks/calculate_compounds.ipynb"
 
