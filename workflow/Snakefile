@@ -98,6 +98,8 @@ rule garner:
         table_gaps="results/tables/garner_gaps.md",
     log:
         notebook="logs/notebooks/garner.ipynb",
+    conda:
+        "envs/coulson.yaml"        
     notebook:
         "notebooks/garner.ipynb"
 
@@ -120,6 +122,8 @@ rule global:
         figure_global_scaffolds_triplet="results/figures/global_scaffolds_triplet.png",
     log:
         notebook="logs/notebooks/global.ipynb",
+    conda:
+        "envs/coulson.yaml"        
     notebook:
         "notebooks/global.ipynb"
 
@@ -131,6 +135,8 @@ rule time:
         variables="results/variables/time.yml",
     log:
         notebook="logs/notebooks/time.ipynb",
+    conda:
+        "envs/coulson.yaml"        
     notebook:
         "notebooks/time.ipynb"
 
@@ -153,6 +159,8 @@ rule local:
         variables="results/variables/local.yml",
     log:
         notebook="logs/notebooks/local.ipynb",
+    conda:
+        "envs/coulson.yaml"        
     notebook:
         "notebooks/local.ipynb"
 
@@ -174,6 +182,8 @@ rule qualitative:
         variables="results/variables/qualitative.yml",
     log:
         notebook="logs/notebooks/qualitative.ipynb",
+    conda:
+        "envs/coulson.yaml"        
     notebook:
         "notebooks/qualitative.ipynb"
 
@@ -187,6 +197,8 @@ rule calculate_compounds:
         progress="logs/{name}.log",
         notebook="logs/notebooks/calculate_compounds_{name}.ipynb",
     threads: workflow.cores
+    conda:
+        "envs/coulson.yaml"        
     notebook:
         "notebooks/calculate_compounds.ipynb"
 
