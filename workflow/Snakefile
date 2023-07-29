@@ -190,7 +190,9 @@ rule calculate_compounds:
     log:
         progress="logs/{name}.log",
         notebook="logs/notebooks/calculate_compounds_{name}.ipynb",
-    threads: workflow.cores
+    threads: 1
+    resources:
+        tasks=workflow.cores
     conda:
         "envs/coulson.yml"
     notebook:

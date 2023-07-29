@@ -5,6 +5,7 @@ from numbers import Integral, Real
 from os import PathLike
 from typing import Any
 
+import cairosvg
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
@@ -12,7 +13,18 @@ import pandas as pd
 import PIL
 import scipy.stats
 import sklearn.metrics
-from coulson.data import HARTREE_TO_EV
+import skunk
+from coulson.data import HARTREE_TO_EV, HARTREE_TO_KCAL
+from coulson.draw import draw_mol, draw_orbital_energies
+from coulson.interface import process_rdkit_mol
+from coulson.ppp import (
+    PPPCalculator,
+    calculate_dsp,
+    calculate_exchange,
+    homo_lumo_overlap,
+)
+from rdkit import Chem
+from rdkit.Chem import AllChem
 from sklearn.linear_model import LinearRegression
 
 AXIS_LABELS: dict[str, str] = {
@@ -407,3 +419,181 @@ def add_to_variables(
         ] = value
 
     return variables_new
+
+
+def generate_orbital_figure(
+    mol_planar: Chem.Mol, ppp: PPPCalculator, exchange: float
+) -> bytes:
+    """Generate composite image of frontier orbitals and exchange value.
+
+    Args:
+        mol_planar: A version of the mol object aligned in the drawing plane
+        ppp: A PPP calculator for the mol
+        exchange: The exchange integral value
+
+    Returns:
+        png_cropped: Composite image as PNG bytes
+    """
+    # Generate orbital figures
+    fig_orbitals, _ = draw_orbital_energies(
+        energies=ppp.orbital_energies * HARTREE_TO_EV,
+        occupations=ppp.occupations,
+        axis_label="Orbital energy (eV)",
+        invert_axis=False,
+        occupation_labels=range(1, ppp.n_orbitals + 1),
+        draw_occupation_labels=True,
+    )
+
+    # Create image of the frontier orbitals
+    svg_homo = draw_mol(
+        mol_planar, properties=ppp.coefficients[ppp.homo_idx], img_format="svg"
+    )
+    svg_lumo = draw_mol(
+        mol_planar, properties=ppp.coefficients[ppp.lumo_idx], img_format="svg"
+    )
+
+    # Create combined image with orbital energies and frontier orbitals
+    svg_lobes = skunk.layout_svgs([svg_homo, svg_lumo], labels=["HOMO", "LUMO"])
+    plt.close()
+
+    label_exchange = (
+        "Frontier orbitals\n"
+        + "$_{"
+        + f"2K={2 * exchange * HARTREE_TO_KCAL:.2f}"
+        + r"\/\mathrm{kcal/mol}}$"
+    )
+
+    shape = (1, 2)
+    figsize = (shape[1] * 2 * 1.5, shape[0] * 3 * 1.5)
+    svg_orbitals = skunk.layout_svgs(
+        [fig_orbitals, svg_lobes],
+        labels=["Orbital energies\n", label_exchange],
+        shape=shape,
+        figsize=figsize,
+    )
+    plt.close()
+
+    # Create PNG and crop it
+    png = cairosvg.svg2png(bytestring=svg_orbitals, dpi=600, background_color="white")
+    png_cropped = crop_image(png)
+
+    return png_cropped
+
+
+def generate_excitation_figure(
+    mol_planar: Chem.Mok,
+    ppp: PPPCalculator,
+    excitations: dict[tuple(int, int), dict[str, float]],
+):
+    """Generate composite image of excitations.
+
+    Args:
+        mol_planar: A version of the mol object aligned in the drawing plane
+        ppp: A PPP calculator for the mol
+        excitations: A dictionary with information about the excitations.
+
+    Returns:
+        png_cropped: Composite image as PNG bytes
+    """
+    # Generate SVGs for all excitations
+    svgs = []
+    labels = []
+    for (i, j), data in excitations.items():
+        img_occupied = draw_mol(
+            mol_planar, properties=ppp.coefficients[i], img_format="svg"
+        )
+        img_virtual = draw_mol(
+            mol_planar, properties=ppp.coefficients[j], img_format="svg"
+        )
+        svg = skunk.layout_svgs(
+            [img_occupied, img_virtual], labels=["Occupied", "Virtual"]
+        )
+        plt.close()
+
+        svgs.append(svg)
+        label = (
+            f"{i + 1} → {j + 1}\n"
+            + "$_{"
+            + f"{data['dsp'] * HARTREE_TO_KCAL:.2f}"
+            + r"\/\mathrm{kcal/mol}}$"
+        )
+
+        labels.append(label)
+
+    # Combine SVGs
+    svg = skunk.layout_svgs(svgs, labels=labels)
+    plt.close()
+
+    # Save to png file
+    png = cairosvg.svg2png(bytestring=svg, dpi=300, background_color="white")
+    png_cropped = crop_image(png)
+
+    return png_cropped
+
+
+def compute_mol_qualitative(mol: Chem.Mol) -> tuple(dict[str, float], bytes, bytes):
+    """Generate excitation data and images for mol.
+
+    Args:
+        mol: RDKit mol object
+
+    Returns:
+        results: Dictionary with the results
+        png_orbitals: PNG of the orbitals as bytes
+        png_excitations: PNG of the excitations as bytes
+    """
+    input_data, _ = process_rdkit_mol(mol)
+
+    # Do SCF calculation
+    ppp = PPPCalculator(input_data)
+    ppp.scf()
+
+    # Calcualte exchange integral
+    exchange = calculate_exchange(ppp)
+
+    # Calculate DSP contribution
+    dsp_scf, excitations_scf = calculate_dsp(ppp)
+
+    # Calculate HOMO-LUMO overlap
+    overlap = homo_lumo_overlap(ppp)
+
+    # Calculate S1 energies and oscillator strengths
+    ppp.ci(n_states=3)
+    energy_s_1_cis = ppp.ci_energies[0] - ppp.electronic_energy
+
+    oscillator_strength = ppp.oscillator_strengths[0]
+
+    # Calculate T1 energies
+    ppp.ci(n_states=3, multiplicity="triplet")
+    energy_t_1_cis = ppp.ci_energies[0] - ppp.electronic_energy
+
+    dsp_cis, _ = calculate_dsp(
+        ppp, ci=True, energy_s_1=energy_s_1_cis, energy_t_1=energy_t_1_cis
+    )
+
+    t1_s1_cis = energy_s_1_cis - energy_t_1_cis
+    t1_s1_dsp_cis = t1_s1_cis + dsp_cis
+    t1_s1_dsp_scf = 2 * exchange + dsp_scf
+
+    # STore results
+    results = {
+        "t1_s1_cis": f"{t1_s1_cis * HARTREE_TO_KCAL:.2f}",
+        "t1_s1_dsp_cis": f"{t1_s1_dsp_cis * HARTREE_TO_KCAL:.2f}",
+        "t1_s1_dsp_scf": f"{t1_s1_dsp_scf * HARTREE_TO_KCAL:.2f}",
+        "2_exchange": f"{2 * exchange * HARTREE_TO_KCAL:.2f}",
+        "dsp_cis": f"{dsp_cis * HARTREE_TO_KCAL:.2f}",
+        "dsp_scf": f"{dsp_scf * HARTREE_TO_KCAL:.2f}",
+        "overlap": f"{overlap:.2f}",
+        "oscillator_strength": f"{oscillator_strength:.3f}",
+    }
+
+    # Create planar mol for plotting
+    mol_planar = Chem.Mol(mol)
+    AllChem.Compute2DCoords(mol_planar)
+    mol_planar = AllChem.RemoveHs(mol_planar)
+
+    # Generate PNG images
+    png_orbitals = generate_orbital_figure(mol_planar, ppp, exchange)
+    png_excitations = generate_excitation_figure(mol_planar, ppp, excitations_scf)
+
+    return results, png_orbitals, png_excitations
