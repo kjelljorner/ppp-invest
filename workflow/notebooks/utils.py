@@ -481,9 +481,9 @@ def generate_orbital_figure(
 
 
 def generate_excitation_figure(
-    mol_planar: Chem.Mok,
+    mol_planar: Chem.Mol,
     ppp: PPPCalculator,
-    excitations: dict[tuple(int, int), dict[str, float]],
+    excitations: dict[tuple[int, int], dict[str, float]],
 ):
     """Generate composite image of excitations.
 
@@ -531,7 +531,7 @@ def generate_excitation_figure(
     return png_cropped
 
 
-def compute_mol_qualitative(mol: Chem.Mol) -> tuple(dict[str, float], bytes, bytes):
+def compute_mol_qualitative(mol: Chem.Mol) -> tuple[dict[str, float], bytes, bytes]:
     """Generate excitation data and images for mol.
 
     Args:
