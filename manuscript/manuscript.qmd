@@ -11,6 +11,8 @@ author:
       - ref: toronto-cs
   - name: "Robert Pollice"
     orcid: 0000-0001-8836-6266
+    email: "r.pollice@rug.nl"
+    corresponding: true
     affiliations: 
       - ref: rug
       - ref: toronto-chem
@@ -321,11 +323,11 @@ To conclude this section on the model compounds, our PPP-based protocol is able 
 
 While our method captures the inverted gap of azaphenalene and pentalene, it also needs to capture trends with substitution to work effectively in virtual screening. We therefore calculated 256 substituted azaphenalenes that have previously been studied by some of us.[@polliceOrganicMoleculesInverted2021] The PPP level S~1~ and T~1~ excitation energies are well correlated with those from {{< var reference_level >}} with $R^2$ of {{< var local_azaphenalenes_r2_singlet >}} and {{< var local_azaphenalenes_r2_triplet >}}, respectively ([@fig-local-azaphenalenes]a,b). Unfortunately, the oscillator strengths are not as well reproduced with an $R^2$ of {{< var local_azaphenalenes_r2_f >}}, although the Spearman $\rho$ of {{< var local_azaphenalenes_rho_f >}} indicates the values might be used to rank potential candidates ([@fig-local-azaphenalenes]c). The problems of obtaining accurate oscillator strengths at the PPP level of theory are well known in the literature, and the problem is especially exacerbated with low oscillator strengths as here.[@misurkinElectronicStructureConjugated1974]. Crucially, the $\DeltaE{ST}$ shows good correlations, with $R^2=$ {{< var local_azaphenalenes_r2_cis >}} using $\DeltaEST[DSP]{CIS}$ ([@fig-local-azaphenalenes]f). This $R^2$ value is essentially unchanged from the gap at the CIS level without DSP ({{< var local_azaphenalenes_r2_cis_raw >}}, [@fig-local-azaphenalenes]d) and markedly better than the gap at the SCF level ({{< var local_azaphenalenes_r2_scf >}}, [@fig-local-azaphenalenes]e), showing the importance of going beyond the SCF level to include at least some configuration interaction. The results are of similar or better quality achieved by Pernal and co-workers for different set of azaphenalenes using SCF + DSP with orbitals from DFT.[@drwalRoleSpinPolarization2023] To further analyze the results in terms of a binary classification into normal/inverted, we calculated the true positives (TP), true negatives (TN), false positives (FP) and false negatives (FN), as well as a range of common classification scores (@tbl-local-azaphenalenes). The most important metrics for virtual screening are, in our opinion, the recall and the specificity. The recall measures the fraction of inverted molecules that the protocol captures, and is {{< var local_azaphenalenes_recall_scf >}} at the SCF level and {{< var local_azaphenalenes_recall_cis >}} at the CIS level. The specificity measures the fraction of non-inverted molecules that the protocol identifies, and is {{< var local_azaphenalenes_specificity_scf >}} at the SCF level and {{< var local_azaphenalenes_specificity_cis >}} at the CIS level. This metrics mean that we are able to capture a large proportion of the molecules with inverted gaps, while filtering out most non-inverted molecules. The results for these azaphenalenes clearly indicate that the PPP protocol could be used to prescreen candidates of this compound class for $\DeltaE{ST}$, while further pruning with another method is likely needed for the oscillator strengths.
 
-![Write some text here]({{< var fig_local_azaphenalenes >}}.pdf){#fig-local-azaphenalenes}
+![Excitation properties for azaphenalenes _vs._ the reference level. (a) Singlet excitation energies. (b) Triplet excitation energies. (c) Oscillator strengths. (d) Singlet-triplet energy gaps with CIS. (e) Singlet-triplet energy gaps with SCF + DSP. (f) Singlet-triplet energy gaps with CIS + DSP.]({{< var fig_local_azaphenalenes >}}.pdf){#fig-local-azaphenalenes}
 
 ```{python}
 # | label: tbl-local-azaphenalenes
-# | tbl-cap: Astronomical object
+# | tbl-cap: Metrics for azaphenalenes.
 # | echo: false
 import pandas as pd
 from IPython.display import display, Markdown
@@ -337,11 +339,11 @@ display(Markdown(md))
 
 While we see success for the azaphenalenes, the situation for the azulenes is unfortunately worse. The PPP level S~1~ and T~1~ excitation energies are only moderately correlated with those from {{< var reference_level >}} with $R^2$ of {{< var local_azulenes_r2_singlet >}} and {{< var local_azulenes_r2_triplet >}}, respectively ([@fig-local-azulenes]a,b). For the oscillator strengths, the situation is rather catastrophic with $R^2$ of {{< var local_azulenes_r2_f >}} implying no correlation whatsoever ([@fig-local-azulenes]c). The situation for the $\DeltaE{ST}$ also worse than for the azaphenalenes, with $R^2=$ {{< var local_azulenes_r2_cis >}} with CIS + DSP, a marked improvement on {{< var local_azulenes_r2_scf >}} with SCF + DSP ([@fig-local-azulenes]e,f). Unfortunately, the negative gaps are not recovered, leading to recalls of {{< var local_azulenes_recall_cis >}} as none of five inverted molecules could be identified ([@tbl-local-azulenes]). It could be speculated that the worse performance for the azulenes comes from the fact that they are non-alternants, for which the approximations are expected to be less applicable. Considering the contrasting performance for the azaphenalenes and azulenes, it seems clear that the PPP screening protocol will inevitably miss some hits belonging to particular compound classes. To investigate the global performance of the model we turned to a more diverse set with 16 different compound classes. 
 
-![Here's some more text]({{< var fig_local_azulenes >}}.pdf){#fig-local-azulenes}
+![Excitation properties for azaazulenes _vs._ the reference level. (a) Singlet excitation energies. (b) Triplet excitation energies. (c) Oscillator strengths. (d) Singlet-triplet energy gaps with CIS. (e) Singlet-triplet energy gaps with SCF + DSP. (f) Singlet-triplet energy gaps with CIS + DSP.]({{< var fig_local_azulenes >}}.pdf){#fig-local-azulenes}
 
 ```{python}
 # | label: tbl-local-azulenes
-# | tbl-cap: Astronomical object
+# | tbl-cap: Metrics for azaazulenes.
 # | echo: false
 import pandas as pd
 from IPython.display import display, Markdown
@@ -357,11 +359,11 @@ Here we used a dataset previously generated by some of us using rational design 
 
 A more detailed breakdown of the correlations into the different scaffolds shows that the highest $R^2$ of {{< var global_scaffolds_r2_max >}} is obtained for {{< var global_scaffolds_r2_max_name >}}, while the lowest is obtained for {{< var global_scaffolds_r2_min_name >}} with {{< var global_scaffolds_r2_min >}}. For recall, the corresponding range is {{< var global_scaffolds_recall_max >}} for {{< var global_scaffolds_recall_max_name >}} to {{< var global_scaffolds_recall_min >}} for {{< var global_scaffolds_recall_min_name >}}. The wide range in $R^2$ and recall further reinforces that the method struggles with some particular compounds classes despite its favorable global performance. Despite these problems, the method is able to capture inverted molecules in {{< var global_scaffolds_n_captured >}} out of the 15 scaffolds where they occur. Even for the azulenes included in this screening set at least some candidates are found, in contrast to the findings above for the azaazulenes. The per-scaffold oscillator strengths are arguably sufficiently good to allow for local screening in some cases ([@fig-global-scaffolds-oscillator]). The per-scaffold S~1~ and T~1~ excitation energies can be found in ([@fig-global-scaffolds-singlet]) and ([@fig-global-scaffolds-triplet]), respectively. Notable failures are for {{< var I >}} with $R^2$ of {{< var global_scaffolds_singlet_r2_I >}} and {{< var global_scaffolds_triplet_r2_I >}}, respectively, and {{< var XII >}} and {{< var XVI >}}, where some negative T~1~ excitation energies indicate restricted-unrestricted instabilities.
 
-![Write some text here]({{< var fig_global_all_gaps >}}.pdf){#fig-global-all-gaps}
+![Singlet-triplet energy gaps for rationally design set _vs._ reference level for (a) SCF + DSP, (b) CIS + DSP and (c) CIS + DSP and linear correction.]({{< var fig_global_all_gaps >}}.pdf){#fig-global-all-gaps}
 
 ```{python}
 # | label: tbl-global-all
-# | tbl-cap: Astronomical object
+# | tbl-cap: Metrics for rationally designed set.
 # | echo: false
 import pandas as pd
 from IPython.display import display, Markdown
@@ -379,11 +381,11 @@ Our computed $\DeltaE{ST}$ with the linearly corrected CIS + DSP show fair corre
 
 In summary, the external validation shows that the PPP method can recover inverted molecules at a fraction of the cost of more expensive methods such as {{< var reference_level_garner >}}.
 
-![Write some text here]({{< var fig_garner_gaps >}}.pdf){#fig-garner-gaps}
+![Singlet-triplet energy gaps for CIS + DSP and linear correction _vs._ reference level for the subsets of (a) non-alternants (b) non-alternants constrained to higher symmetry and (c) substituted non-alternants. Compounds contained in the rationally designed sets are marked with dashed circles and those with negative triplet excitation energies are marked with a semi-transparent red circle.]({{< var fig_garner_gaps >}}.pdf){#fig-garner-gaps}
 
 ```{python}
 # | label: tbl-garner-gaps
-# | tbl-cap: Astronomical object
+# | tbl-cap: Metrics for the dataset from Garner _et al._
 # | echo: false
 import pandas as pd
 from IPython.display import display, Markdown
@@ -422,7 +424,7 @@ K.J. acknowledges funding through an International Postdoc grant from the Swedis
 
 ![Singlet and triplet excitation energies as well as oscillator strengths for the rationally designed dataset *vs.* the reference level.]({{< var fig_global_all >}}.pdf){#fig-global-all}
 
-![Singlet-triplet gap split by scaffold for the rationally designed dataset *vs.* the reference level.]({{< var fig_global_scaffolds_gaps >}}.png){#fig-global-scaffolds-gaps}
+![Singlet-triplet energy gaps split by scaffold for the rationally designed dataset *vs.* the reference level.]({{< var fig_global_scaffolds_gaps >}}.png){#fig-global-scaffolds-gaps}
 
 ![Singlet excitation energies split by scaffold for the rationally designed dataset *vs.* the reference level.]({{< var fig_global_scaffolds_singlet >}}.png){#fig-global-scaffolds-singlet}
 
@@ -430,7 +432,7 @@ K.J. acknowledges funding through an International Postdoc grant from the Swedis
 
 ![Oscillator strengths split by scaffold for the rationally designed dataset *vs.* the reference level.]({{< var fig_global_scaffolds_oscillator >}}.png){#fig-global-scaffolds-oscillator}
 
-![Singlet-triplet gaps with CIS + DSP and linear correction for the (a) azaphenalenes and (b) azaazulenes *vs.* the reference level.]({{< var fig_local_corr >}}.pdf){#fig-local-corr}
+![Singlet-triplet energy gaps with CIS + DSP and linear correction for the (a) azaphenalenes and (b) azaazulenes *vs.* the reference level.]({{< var fig_local_corr >}}.pdf){#fig-local-corr}
 
 ```{python}
 # | label: tbl-global-scaffolds

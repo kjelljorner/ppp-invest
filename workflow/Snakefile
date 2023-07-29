@@ -178,16 +178,11 @@ rule qualitative:
         "notebooks/qualitative.ipynb"
 
 
-rule calculate_all:
-    input:
-        expand(["results/{name}.csv"], name=NAMES),
-
-
 rule calculate_compounds:
     input:
         path="resources/xyz/{name}",
     output:
-        combined="results/{name}.csv",
+        combined=protected("results/{name}.csv"),
     log:
         progress="logs/{name}.log",
         notebook="logs/notebooks/calculate_compounds_{name}.ipynb",
