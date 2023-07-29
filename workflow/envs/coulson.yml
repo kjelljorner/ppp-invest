@@ -9,6 +9,7 @@ dependencies:
   - networkx
   - numpy
   - pandas
+  - papermill
   - pip
   - python=3.10
   - pyyaml
