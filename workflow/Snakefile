@@ -41,6 +41,8 @@ rule manuscript:
         tables_garner=[
             "results/tables/garner_gaps.md",
         ],
+    conda:
+        "envs/coulson.yml"        
     output:
         "manuscript/manuscript.pdf",
     shell:
@@ -85,6 +87,7 @@ rule garner:
         xyz_avoided_symmetry="resources/xyz/garner_avoided_symmetry",
         xyz_substituted="resources/xyz/garner_substituted",
         corr="results/linear_correction.json",
+        utils=workflow.source_path("notebooks/utils.py"),
     output:
         params="results/params/garner.yml",
         variables="results/variables/garner.yml",
@@ -102,6 +105,7 @@ rule global:
     input:
         data="results/rational_design.csv",
         reference="data/reference/rational_design.csv",
+        utils=workflow.source_path("notebooks/utils.py"),
     output:
         params="results/params/global.yml",
         variables="results/variables/global.yml",
@@ -141,8 +145,8 @@ rule local:
         azaphenalenes_ref="data/reference/azaphenalenes.csv",
         azulenes="results/azulenes.csv",
         azulenes_ref="data/reference/azulenes.csv",
-        utils=workflow.source_path("notebooks/utils.py"),
         corr="results/linear_correction.json",
+        utils=workflow.source_path("notebooks/utils.py"),
     output:
         figure_azaphenalenes="results/figures/local_azaphenalenes.pdf",
         figure_azulenes="results/figures/local_azulenes.pdf",
@@ -185,6 +189,7 @@ rule qualitative:
 rule calculate_compounds:
     input:
         path="resources/xyz/{name}",
+        calculate=workflow.source_path("notebooks/calculate.py"),
     output:
         combined=protected("results/{name}.csv"),
     log:
