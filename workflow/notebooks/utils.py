@@ -23,6 +23,7 @@ from coulson.ppp import (
     calculate_exchange,
     homo_lumo_overlap,
 )
+from numpy.typing import ArrayLike
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from sklearn.linear_model import LinearRegression
@@ -109,6 +110,24 @@ ALTERNANT: dict[str, str] = {
     "XVI": "non-alternant",
 }
 """Classification into alternant/non-alternant for the parent compounds of the rational design set."""
+
+
+def f1_score(y_true: ArrayLike, y_pred: ArrayLike):
+    """Return F1 score which does not break when tp and fp are zero.
+
+    Args:
+        y_true: True target values
+        y_pred: Predicted target values
+
+    Returns:
+        f1: F1 score
+    """
+    tn, fp, fn, tp = sklearn.metrics.confusion_matrix(
+        y_true, y_pred, labels=[False, True]
+    ).ravel()
+    f1 = 2 * tp / (2 * tp + fp + fn)
+
+    return f1
 
 
 def plot_zero_zero(
@@ -208,7 +227,7 @@ def plot_zero_zero(
             roc_auc = sklearn.metrics.roc_auc_score(y_true, y_pred)
         except ValueError:
             roc_auc = np.nan
-        f1 = sklearn.metrics.f1_score(y_true, y_pred, zero_division=np.nan)
+        f1 = f1_score(y_true, y_pred)
         accuracy = sklearn.metrics.accuracy_score(y_true, y_pred)
         recall = sklearn.metrics.recall_score(y_true, y_pred, zero_division=np.nan)
 
