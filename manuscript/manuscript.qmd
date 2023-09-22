@@ -406,7 +406,7 @@ K.J. acknowledges funding through an International Postdoc grant from the Swedis
 
 # Data availability
 
-The code to perform all the calculations and to generate the PDF of the manuscript using the Quarto publishing system are found at <https://https://github.com/kjelljorner/ppp-invest>. Snakemake[@molderSustainableDataAnalysis2021] was used as workflow manager, ensuring reproducible data generation. An archive of the workflow run used to generate this manuscript can be found on <https://doi.org/10.5281/zenodo.8289952> together with all the output data generated.
+The code to perform all the calculations and to generate the PDF of the manuscript using the Quarto publishing system are found at <https://github.com/kjelljorner/ppp-invest>. Snakemake[@molderSustainableDataAnalysis2021] was used as workflow manager, ensuring reproducible data generation. An archive of the workflow run used to generate this manuscript can be found on <https://doi.org/10.5281/zenodo.8289952> together with all the output data generated.
 
 # References
 
