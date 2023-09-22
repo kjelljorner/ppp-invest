@@ -40,10 +40,10 @@ AXIS_LABELS: dict[str, str] = {
     "homo_lumo_overlap": r"$O_\mathrm{HL}$",
     "oscillator_strength": r"$f_\mathrm{CIS}$",
     "oscillator_strength_ref": r"$f_\mathrm{REF}$",
-    "s1_cis": r"$\Delta E_\mathrm{S,CIS}} (eV)$",
-    "s1_ref": r"$\Delta E_\mathrm{S,REF}} (eV)$",
-    "t1_cis": r"$\Delta E_\mathrm{T,CIS}} (eV)$",
-    "t1_ref": r"$\Delta E_\mathrm{T,REF}} (eV)$",
+    "s1_cis": r"$\Delta E_\mathrm{S,CIS}}$ (eV)",
+    "s1_ref": r"$\Delta E_\mathrm{S,REF}}$ (eV)",
+    "t1_cis": r"$\Delta E_\mathrm{T,CIS}}$ (eV)",
+    "t1_ref": r"$\Delta E_\mathrm{T,REF}}$ (eV)",
     "t1_s1_cc2_aug_dz": r"$\Delta E_{\mathrm{ST,REF}}$ (eV)",
     "t1_s1_cc2_dz": r"$\Delta E_{\mathrm{ST,REF}}$ (eV)",
     "t1_s1_eom_aug_dz": r"$\Delta E_{\mathrm{ST,REF}}$ (eV)",
@@ -112,7 +112,7 @@ ALTERNANT: dict[str, str] = {
 """Classification into alternant/non-alternant for the parent compounds of the rational design set."""
 
 
-def f1_score(y_true: ArrayLike, y_pred: ArrayLike):
+def f1_score(y_true: ArrayLike, y_pred: ArrayLike) -> float:
     """Return F1 score which does not break when tp and fp are zero.
 
     Args:
@@ -125,7 +125,7 @@ def f1_score(y_true: ArrayLike, y_pred: ArrayLike):
     tn, fp, fn, tp = sklearn.metrics.confusion_matrix(
         y_true, y_pred, labels=[False, True]
     ).ravel()
-    f1 = 2 * tp / (2 * tp + fp + fn)
+    f1: float = 2 * tp / (2 * tp + fp + fn)
 
     return f1
 
@@ -140,9 +140,9 @@ def plot_zero_zero(
     zero_zero: bool = True,
     n_dec: int = 2,
     legend_loc: str | None = None,
-    **kwargs,
+    **kwargs: Any,
 ) -> tuple[mpl.figure.Figure, mpl.axes.Axes, dict[str, Real]]:
-    """Plotting convenience function.
+    """Plot convenience function.
 
     Args:
         df: Dataframe
@@ -161,6 +161,8 @@ def plot_zero_zero(
         ax: Matplotlib axes
         results: Dictionary of results for regression and classification
 
+    Raises:
+        ValueError: If plot_type is not in allowed values
     """
     # Create format specifier for plotting
     format_specifier = f".{n_dec}f"
@@ -472,7 +474,9 @@ def generate_orbital_figure(
     )
 
     # Create combined image with orbital energies and frontier orbitals
-    svg_lobes = skunk.layout_svgs([svg_homo, svg_lumo], labels=["HOMO", "LUMO"])
+    svg_lobes = skunk.layout_svgs(
+        [svg_homo, svg_lumo], labels=["HOMO", "LUMO"], fontsize=12
+    )
     plt.close()
 
     label_exchange = (
@@ -489,6 +493,7 @@ def generate_orbital_figure(
         labels=["Orbital energies\n", label_exchange],
         shape=shape,
         figsize=figsize,
+        fontsize=14,
     )
     plt.close()
 
@@ -503,7 +508,7 @@ def generate_excitation_figure(
     mol_planar: Chem.Mol,
     ppp: PPPCalculator,
     excitations: dict[tuple[int, int], dict[str, float]],
-):
+) -> bytes:
     """Generate composite image of excitations.
 
     Args:
@@ -525,7 +530,7 @@ def generate_excitation_figure(
             mol_planar, properties=ppp.coefficients[j], img_format="svg"
         )
         svg = skunk.layout_svgs(
-            [img_occupied, img_virtual], labels=["Occupied", "Virtual"]
+            [img_occupied, img_virtual], labels=["Occupied", "Virtual"], fontsize=20
         )
         plt.close()
 
@@ -540,7 +545,7 @@ def generate_excitation_figure(
         labels.append(label)
 
     # Combine SVGs
-    svg = skunk.layout_svgs(svgs, labels=labels)
+    svg = skunk.layout_svgs(svgs, labels=labels, fontsize=10)
     plt.close()
 
     # Save to png file
@@ -550,7 +555,7 @@ def generate_excitation_figure(
     return png_cropped
 
 
-def compute_mol_qualitative(mol: Chem.Mol) -> tuple[dict[str, float], bytes, bytes]:
+def compute_mol_qualitative(mol: Chem.Mol) -> tuple[dict[str, str], bytes, bytes]:
     """Generate excitation data and images for mol.
 
     Args:

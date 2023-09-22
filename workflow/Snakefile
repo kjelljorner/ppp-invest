@@ -3,6 +3,7 @@ rule manuscript:
         qmd="manuscript/manuscript.qmd",
         variables="manuscript/_variables.yml",
         params="manuscript/_params.yml",
+        references="manuscript/references.bib",
         figures_qualitative=[
             "results/figures/azaphenalene_orbitals.png",
             "results/figures/azaphenalene_excitations.png",
