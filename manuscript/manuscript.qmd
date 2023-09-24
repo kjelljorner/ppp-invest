@@ -22,7 +22,7 @@ author:
     affiliations: 
       - ref: toronto-chem
       - ref: toronto-cs    
-  - name: "Alán Aspuru Guzik"
+  - name: "Alán Aspuru-Guzik"
     orcid: 0000-0002-8277-4434
     email: aspuru@utoronto.ca
     corresponding: true    
