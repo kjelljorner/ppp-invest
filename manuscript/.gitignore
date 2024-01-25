@@ -1,4 +1,11 @@
 /.quarto/
-manuscript.spl
+/manuscript.spl
+/manuscript.loc
+/manuscript.soc
 /elsarticle.cls
 /elsarticle-num.bst
+/manuscript.pdf
+/_variables.yml
+/_params.yml
+/manuscript.tex
+/manuscript_cleaned.*

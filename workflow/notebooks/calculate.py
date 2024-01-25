@@ -12,17 +12,19 @@ from coulson.ppp import (
 )
 
 
-def calculate_compound(filename: str | PathLike) -> dict[str, list[int]]:
+def calculate_compound(
+    filename: str | PathLike, overlap_method: str = "interpolation"
+) -> dict[str, list[int]]:
     """Calculate excitation roperties of molecule."""
     # Process filename with RDKit mol detection from XYZ
-    start_time = time.time()
+    start_time = time.perf_counter()
     mol = mol_from_xyz(filename)
     input_data, mask = process_rdkit_mol(mol)
     if not any(mask) is True:
         raise ValueError("Molecule does not have pi system.")
 
     # Perform SCF calculation
-    ppp = PPPCalculator(input_data)
+    ppp = PPPCalculator(input_data, overlap_method=overlap_method)
     ppp.scf(max_iter=500)
 
     # Calcualte exchange integral
@@ -45,7 +47,7 @@ def calculate_compound(filename: str | PathLike) -> dict[str, list[int]]:
     dsp_cis, _ = calculate_dsp(
         ppp, ci=True, energy_s_1=energy_s1_cis, energy_t_1=energy_t1_cis
     )
-    end_time = time.time()
+    end_time = time.perf_counter()
     run_time = end_time - start_time
 
     results = {

@@ -12,6 +12,8 @@ rule manuscript:
             "results/figures/pentalene_ideal_orbitals.png",
             "results/figures/pentalene_ideal_excitations.png",
         ],
+        figure_toc="data/figures/TOC.pdf",
+        figure_dsp="data/figures/dynamic_spin_polarization.pdf",
         figures_local=[
             "results/figures/local_azaphenalenes.pdf",
             "results/figures/local_azulenes.pdf",
@@ -32,6 +34,10 @@ rule manuscript:
             "results/figures/negative_all.pdf",
             "results/figures/negative_scaffolds.png",
         ],
+        figures_opt=[
+            "results/figures/opt_corr.pdf",
+            "results/figures/opt_gap.pdf",
+        ],
         tables_local=[
             "results/tables/local_azaphenalenes.md",
             "results/tables/local_azulenes.md",
@@ -46,6 +52,8 @@ rule manuscript:
         tables_negative=[
             "results/tables/negative.md",
         ],
+        tables_parameters=["results/tables/parameters.md"],
+        tables_opt=["results/tables/opt.md"],
     conda:
         "envs/coulson.yml"
     output:
@@ -63,6 +71,9 @@ rule concatenate_variables:
         "results/variables/garner.yml",
         "results/variables/time.yml",
         "results/variables/negative.yml",
+        "results/variables/interpolation.yml",
+        "results/variables/timing.yml",
+        "results/variables/opt.yml",
     output:
         "manuscript/_variables.yml",
     shell:
@@ -75,10 +86,80 @@ rule concatenate_params:
         "results/params/global.yml",
         "results/params/garner.yml",
         "results/params/negative.yml",
+        "results/params/parameters.yml",
+        "results/params/opt.yml",
     output:
         "manuscript/_params.yml",
     shell:
         "cat {input} > {output}"
+
+
+rule parameters:
+    input:
+        path="resources/xyz/",
+        utils=workflow.source_path("notebooks/utils.py"),
+    output:
+        params="results/params/parameters.yml",
+        table="results/tables/parameters.md",
+    conda:
+        "envs/coulson.yml"
+    notebook:
+        "notebooks/parameters.ipynb"
+
+
+rule opt:
+    input:
+        data_dft="results/azaphenalenes.csv",
+        data_mmff="results/azaphenalenes_mmff.csv",
+        data_gfnff="results/azaphenalenes_gfnff.csv",
+        data_gfn2="results/azaphenalenes_gfn2.csv",
+        data_ani1ccx="results/azaphenalenes_ani1ccx.csv",
+        data_ref="data/reference/azaphenalenes.csv",
+        utils=workflow.source_path("notebooks/utils.py"),
+    output:
+        params="results/params/opt.yml",
+        variables="results/variables/opt.yml",
+        figure_corr="results/figures/opt_corr.pdf",
+        figure_gap="results/figures/opt_gap.pdf",
+        table="results/tables/opt.md",
+    log:
+        notebook="logs/notebooks/opt.ipynb",
+    conda:
+        "envs/coulson.yml"
+    notebook:
+        "notebooks/opt.ipynb"
+
+
+rule timing:
+    input:
+        xyz_dir="resources/xyz/azaphenalenes",
+        utils=workflow.source_path("notebooks/utils.py"),
+    output:
+        variables="results/variables/timing.yml",
+    log:
+        notebook="logs/notebooks/timing.ipynb",
+    threads: workflow.cores
+    conda:
+        "envs/coulson.yml"
+    notebook:
+        "notebooks/timing.ipynb"
+
+
+rule interpolation:
+    input:
+        data_interpolation="results/azaphenalenes.csv",
+        data_no_interpolation="results/azaphenalenes_no_interpolation.csv",
+        reference="data/reference/azaphenalenes.csv",
+        utils=workflow.source_path("notebooks/utils.py"),
+    output:
+        variables="results/variables/interpolation.yml",
+        figure_interpolation="results/figures/interpolation.pdf",
+    log:
+        notebook="logs/notebooks/interpolation.ipynb",
+    conda:
+        "envs/coulson.yml"
+    notebook:
+        "notebooks/interpolation.ipynb"
 
 
 rule garner:
@@ -214,6 +295,42 @@ rule qualitative:
         "envs/coulson.yml"
     notebook:
         "notebooks/qualitative.ipynb"
+
+
+rule calculate_opt:
+    input:
+        path="data/reference/azaphenalenes.csv",
+        calculate=workflow.source_path("notebooks/calculate.py"),
+    output:
+        mmff=protected("results/azaphenalenes_mmff.csv"),
+        gfnff=protected("results/azaphenalenes_gfnff.csv"),
+        gfn2=protected("results/azaphenalenes_gfn2.csv"),
+        ani=protected("results/azaphenalenes_ani1ccx.csv"),
+        xyz_dir=directory("results/xyz/azaphenalenes"),
+    log:
+        progress="logs/opt.log",
+        notebook="logs/notebooks/calculate_opt.ipynb",
+    threads: workflow.cores
+    conda:
+        "envs/coulson.yml"
+    notebook:
+        "notebooks/calculate_opt.ipynb"
+
+
+rule calculate_interpolation:
+    input:
+        path="resources/xyz/azaphenalenes",
+        calculate=workflow.source_path("notebooks/calculate.py"),
+    output:
+        combined=protected("results/azaphenalenes_no_interpolation.csv"),
+    log:
+        progress="logs/azaphenalenes_no_interpolation.log",
+        notebook="logs/notebooks/calculate_interpolation.ipynb",
+    threads: workflow.cores
+    conda:
+        "envs/coulson.yml"
+    notebook:
+        "notebooks/calculate_interpolation.ipynb"
 
 
 rule calculate_compounds:

@@ -1,6 +1,7 @@
 channels:
   - conda-forge
 dependencies:
+  - ase
   - cairosvg
   - joblib
   - jupyter
@@ -19,7 +20,9 @@ dependencies:
   - scikit-learn
   - scipy
   - shapely
+  - torchani
   - tqdm
+  - xtb
   - pip:
       - git+https://github.com/digital-chemistry-laboratory/coulson
       - skunk

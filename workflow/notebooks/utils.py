@@ -14,7 +14,7 @@ import PIL
 import scipy.stats
 import sklearn.metrics
 import skunk
-from coulson.data import HARTREE_TO_EV, HARTREE_TO_KCAL
+from coulson.data import HARTREE_TO_EV
 from coulson.draw import draw_mol, draw_orbital_energies
 from coulson.interface import process_rdkit_mol
 from coulson.ppp import (
@@ -32,7 +32,16 @@ AXIS_LABELS: dict[str, str] = {
     "t1_s1_ref": r"$\Delta E_{\mathrm{ST,REF}}$ (eV)",
     "t1_s1_ppp": r"$\Delta E_{\mathrm{ST,CIS}}$ (eV)",
     "t1_s1_dsp_scf": r"$\Delta E_{\mathrm{ST,SCF}}^{\mathrm{DSP}}$ (eV)",
+    "t1_s1_dsp_scf_interpolation": r"$\Delta E_{\mathrm{ST,SCF}}^{\mathrm{DSP}}$ (eV) interp.",
+    "t1_s1_dsp_scf_no_interpolation": r"$\Delta E_{\mathrm{ST,SCF}}^{\mathrm{DSP}}$ (eV) no interp.",
     "t1_s1_dsp_cis": r"$\Delta E_{\mathrm{ST,CIS}}^{\mathrm{DSP}}$ (eV)",
+    "t1_s1_dsp_cis_dft": r"$\Delta E_{\mathrm{ST,CIS,DFT}}^{\mathrm{DSP}}$ (eV)",
+    "t1_s1_dsp_cis_mmff": r"$\Delta E_{\mathrm{ST,CIS,MMFF}}^{\mathrm{DSP}}$ (eV)",
+    "t1_s1_dsp_cis_gfnff": r"$\Delta E_{\mathrm{ST,CIS,GFNFF}}^{\mathrm{DSP}}$ (eV)",
+    "t1_s1_dsp_cis_gfn2": r"$\Delta E_{\mathrm{ST,CIS,GFN2xTB}}^{\mathrm{DSP}}$ (eV)",
+    "t1_s1_dsp_cis_ani1ccx": r"$\Delta E_{\mathrm{ST,CIS,ANI1ccx}}^{\mathrm{DSP}}$ (eV)",
+    "t1_s1_dsp_cis_interpolation": r"$\Delta E_{\mathrm{ST,CIS}}^{\mathrm{DSP}}$ (eV) interp.",
+    "t1_s1_dsp_cis_no_interpolation": r"$\Delta E_{\mathrm{ST,CIS}}^{\mathrm{DSP}}$ (eV) no interp.",
     "t1_s1_dsp_cis_corr": r"$\Delta E_{\mathrm{ST,CIS,corr}}^{\mathrm{DSP}}$ (eV)",
     "exchange": r"$K$ (eV)",
     "dsp_scf": r"$\Delta E_{\mathrm{SCF}}^{\mathrm{DSP}}$ (eV)",
@@ -198,16 +207,20 @@ def plot_zero_zero(
     lr.fit(df[[x_name]], df[y_name])
     y_pred = lr.predict(df[[x_name]])
     r2 = sklearn.metrics.r2_score(y_true, y_pred)
+    rmse = sklearn.metrics.mean_squared_error(y_true, y_pred, squared=False)
     spearman_r = scipy.stats.spearmanr(y_true, y_pred).statistic
     label = (
         rf"$R^2={r2:{format_specifier}}$"
         + "\n"
         + rf"$\rho={spearman_r:{format_specifier}}$"
+        + "\n"
+        + rf"RMSE$={rmse:{format_specifier}}$"
     )
 
     results = {
         "$R^2$": r2,
         r"$\rho$": spearman_r,
+        "RMSE": rmse,
     }
 
     # Calculate classification scores
@@ -482,8 +495,8 @@ def generate_orbital_figure(
     label_exchange = (
         "Frontier orbitals\n"
         + "$_{"
-        + f"2K={2 * exchange * HARTREE_TO_KCAL:.2f}"
-        + r"\/\mathrm{kcal/mol}}$"
+        + f"2K={2 * exchange * HARTREE_TO_EV:.3f}"
+        + r"\/\mathrm{eV}}$"
     )
 
     shape = (1, 2)
@@ -538,8 +551,8 @@ def generate_excitation_figure(
         label = (
             f"{i + 1} → {j + 1}\n"
             + "$_{"
-            + f"{data['dsp'] * HARTREE_TO_KCAL:.2f}"
-            + r"\/\mathrm{kcal/mol}}$"
+            + f"{data['dsp'] * HARTREE_TO_EV:.3f}"
+            + r"\/\mathrm{eV}}$"
         )
 
         labels.append(label)
@@ -601,12 +614,12 @@ def compute_mol_qualitative(mol: Chem.Mol) -> tuple[dict[str, str], bytes, bytes
 
     # STore results
     results = {
-        "t1_s1_cis": f"{t1_s1_cis * HARTREE_TO_KCAL:.2f}",
-        "t1_s1_dsp_cis": f"{t1_s1_dsp_cis * HARTREE_TO_KCAL:.2f}",
-        "t1_s1_dsp_scf": f"{t1_s1_dsp_scf * HARTREE_TO_KCAL:.2f}",
-        "2_exchange": f"{2 * exchange * HARTREE_TO_KCAL:.2f}",
-        "dsp_cis": f"{dsp_cis * HARTREE_TO_KCAL:.2f}",
-        "dsp_scf": f"{dsp_scf * HARTREE_TO_KCAL:.2f}",
+        "t1_s1_cis": f"{t1_s1_cis * HARTREE_TO_EV:.3f}",
+        "t1_s1_dsp_cis": f"{t1_s1_dsp_cis * HARTREE_TO_EV:.3f}",
+        "t1_s1_dsp_scf": f"{t1_s1_dsp_scf * HARTREE_TO_EV:.3f}",
+        "2_exchange": f"{2 * exchange * HARTREE_TO_EV:.3f}",
+        "dsp_cis": f"{dsp_cis * HARTREE_TO_EV:.3f}",
+        "dsp_scf": f"{dsp_scf * HARTREE_TO_EV:.3f}",
         "overlap": f"{overlap:.2f}",
         "oscillator_strength": f"{oscillator_strength:.3f}",
     }

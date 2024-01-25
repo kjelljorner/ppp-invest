@@ -4,9 +4,6 @@ logs/**
 .snakemake
 .snakemake/**
 .vscode
-manuscript/manuscript.pdf
-manuscript/_variables.yml
-manuscript/_params.yml
-manuscript/manuscript.tex
+.mypy_cache
 __pycache__/
 .DS_Store
